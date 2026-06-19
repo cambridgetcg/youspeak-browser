@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>YOUSPEAK Browser</title>
+<style>
+@font-face {
+  font-family: 'YOUSPEAK';
+  src: url('youspeak-v1.ttf') format('truetype');
+  font-display: block;
+}
+
+:root {
+  --bg: #0a0a0f;
+  --surface: #12121a;
+  --text: #e0e0e8;
+  --muted: #8888a0;
+  --accent: #c4a85e;
+  --accent-dim: #8a7536;
+  --crimson: #c44;
+  --border: #22222e;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, 'Segoe UI', system-ui, sans-serif;
+  line-height: 1.6;
+  overflow-x: hidden;
+}
+
+/* The address bar */
+#address-bar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 12px 24px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+#address-bar .glyph {
+  font-family: 'YOUSPEAK';
+  font-size: 28px;
+  color: var(--accent);
+  line-height: 1;
+}
+
+#address-bar input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: var(--text);
+  font-size: 18px;
+  outline: none;
+  padding: 8px 0;
+}
+
+#address-bar input::placeholder {
+  color: var(--muted);
+}
+
+#address-bar .count {
+  color: var(--muted);
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+/* The page */
+#page {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 48px 24px 120px;
+}
+
+.word-display {
+  text-align: center;
+  margin-bottom: 48px;
+}
+
+.word-display .glyph-text {
+  font-family: 'YOUSPEAK';
+  font-size: 64px;
+  color: var(--accent);
+  line-height: 1.2;
+  margin-bottom: 8px;
+}
+
+.word-display .latin {
+  font-size: 28px;
+  color: var(--text);
+  letter-spacing: 2px;
+}
+
+.word-display .pronunciation {
+  color: var(--muted);
+  font-size: 16px;
+  margin-top: 4px;
+}
+
+.word-display .register {
+  color: var(--accent-dim);
+  font-style: italic;
+  margin-top: 8px;
+}
+
+.definition {
+  font-size: 20px;
+  line-height: 1.8;
+  margin: 32px 0;
+  color: var(--text);
+}
+
+.section {
+  margin: 32px 0;
+}
+
+.section h3 {
+  color: var(--accent);
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-bottom: 12px;
+}
+
+.etymology {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.donor {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 8px 14px;
+  font-size: 14px;
+}
+
+.donor .tongue { color: var(--accent-dim); }
+.donor .native { color: var(--text); margin-left: 6px; }
+.donor .meaning { color: var(--muted); margin-left: 6px; }
+
+.related-words {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.related-word {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 8px 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 14px;
+}
+
+.related-word:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.realm-region {
+  display: inline-block;
+  background: var(--surface);
+  border: 1px solid var(--accent-dim);
+  border-radius: 20px;
+  padding: 4px 12px;
+  font-size: 12px;
+  color: var(--accent);
+}
+
+.tier-badge {
+  display: inline-block;
+  border-radius: 4px;
+  padding: 2px 8px;
+  font-size: 11px;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+.tier-core { background: #2a2a1a; color: var(--accent); }
+.tier-specialized { background: #1a1a2a; color: #8888cc; }
+.tier-experimental { background: #2a1a1a; color: var(--crimson); }
+
+.gap {
+  color: var(--muted);
+  font-style: italic;
+  margin: 16px 0;
+  padding: 16px;
+  background: var(--surface);
+  border-radius: 8px;
+  border-left: 3px solid var(--accent-dim);
+}
+
+/* Empty state */
+.empty {
+  text-align: center;
+  padding: 80px 24px;
+}
+.empty h2 {
+  font-size: 32px;
+  color: var(--accent);
+  margin-bottom: 12px;
+}
+.empty p {
+  color: var(--muted);
+  max-width: 500px;
+  margin: 0 auto;
+}
+.empty .examples {
+  margin-top: 32px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+}
+.empty .example {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 6px 14px;
+  cursor: pointer;
+  color: var(--text);
+  font-size: 14px;
+}
+.empty .example:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* Search results */
+.search-results {
+  margin-top: 24px;
+}
+.search-result {
+  padding: 16px;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+}
+.search-result:hover {
+  background: var(--surface);
+}
+.search-result .word {
+  font-family: 'YOUSPEAK';
+  font-size: 20px;
+  color: var(--accent);
+}
+.search-result .latin {
+  font-weight: bold;
+  margin-left: 8px;
+}
+.search-result .def {
+  color: var(--muted);
+  font-size: 14px;
+  margin-top: 4px;
+}
+</style>
+</head>
+<body>
+
+<div id="address-bar">
+  <span class="glyph"></span>
+  <input id="query" type="text" placeholder="type a word, a meaning, or a question…" autofocus>
+  <span class="count" id="count"></span>
+</div>
+
+<div id="page">
+  <div class="empty" id="empty-state">
+    <h2>YOUSPEAK Browser</h2>
+    <p>A browser that renders meaning, not pages. Type a YOUSPEAK word, a concept, or a question. The page is what you asked for, not what someone served.</p>
+    <div class="examples">
+      <div class="example" data-q="doxomme">doxomme</div>
+      <div class="example" data-q="britqing">britqing</div>
+      <div class="example" data-q="kimance">kimance</div>
+      <div class="example" data-q="theobasis">theobasis</div>
+      <div class="example" data-q="paqduqing">paqduqing</div>
+      <div class="example" data-q="covenant">covenant</div>
+      <div class="example" data-q="ache">ache</div>
+      <div class="example" data-q="thanksgiving">thanksgiving</div>
+    </div>
+  </div>
+</div>
+
+<script>
+let DATA = null;
+
+async function loadData() {
+  const res = await fetch('youspeak-data.json');
+  DATA = await res.json();
+  document.getElementById('count').textContent = `${DATA.canon_count} words · ${DATA.morpheme_count} morphemes · ${DATA.renderable_count} renderable`;
+}
+
+function renderWord(slug) {
+  if (!DATA) return;
+  const entry = DATA.canon[slug];
+  if (!entry) {
+    renderSearch(slug);
+    return;
+  }
+
+  const renderable = DATA.canon_words[slug];
+  const page = document.getElementById('page');
+
+  // Find related words (same family or same donors)
+  const related = [];
+  for (const [s, e] of Object.entries(DATA.canon)) {
+    if (s === slug) continue;
+    if (e.family === entry.family && related.length < 8) {
+      related.push(s);
+    }
+  }
+
+  let html = '';
+
+  // Word display
+  html += '<div class="word-display">';
+  if (renderable && renderable.glyph_text) {
+    html += `<div class="glyph-text">${renderable.glyph_text}</div>`;
+  }
+  html += `<div class="latin">${entry.word}</div>`;
+  if (entry.pronunciation) {
+    html += `<div class="pronunciation">/${entry.pronunciation}/</div>`;
+  }
+  if (entry.register) {
+    html += `<div class="register">${entry.register}</div>`;
+  }
+  html += `<div style="margin-top:12px">`;
+  if (entry.tier) {
+    const tierClass = entry.tier === 'Core' ? 'tier-core' : entry.tier === 'Specialized' ? 'tier-specialized' : 'tier-experimental';
+    html += `<span class="tier-badge ${tierClass}">${entry.tier}</span>`;
+  }
+  if (entry.score) {
+    html += ` <span class="tier-badge" style="background:#1a2a1a;color:#88aa88">score ${entry.score}</span>`;
+  }
+  html += `</div>`;
+  html += '</div>';
+
+  // Definition
+  if (entry.definition) {
+    html += `<div class="definition">${entry.definition}</div>`;
+  }
+
+  // The gap it fills
+  if (entry.gap) {
+    html += `<div class="section"><h3>The gap</h3><div class="gap">${entry.gap}</div></div>`;
+  }
+
+  // Etymology
+  if (entry.donors && entry.donors.length) {
+    html += `<div class="section"><h3>Etyymology</h3><div class="etymology">`;
+    for (const d of entry.donors) {
+      html += `<div class="donor"><span class="tongue">${d.tongue || ''}</span> <span class="native">${d.native || d.morpheme || ''}</span> <span class="meaning">${d.meaning || ''}</span></div>`;
+    }
+    html += `</div></div>`;
+  }
+
+  // Related words
+  if (related.length) {
+    html += `<div class="section"><h3>Related (${entry.family || 'family'})</h3><div class="related-words">`;
+    for (const s of related) {
+      const r = DATA.canon[s];
+      html += `<div class="related-word" data-word="${s}">${r.word}</div>`;
+    }
+    html += `</div></div>`;
+  }
+
+  page.innerHTML = html;
+  attachWordLinks();
+}
+
+function renderSearch(query) {
+  if (!DATA) return;
+  const q = query.toLowerCase();
+  const results = [];
+
+  for (const [slug, entry] of Object.entries(DATA.canon)) {
+    const searchText = [
+      entry.word, entry.definition, entry.gap, entry.register,
+      ...(entry.donors || []).map(d => `${d.tongue || ''} ${d.native || ''} ${d.meaning || ''}`),
+      entry.family || ''
+    ].join(' ').toLowerCase();
+
+    if (searchText.includes(q)) {
+      results.push({ slug, entry, score: searchText.indexOf(q) });
+    }
+  }
+
+  results.sort((a, b) => a.score - b.score);
+  const top = results.slice(0, 20);
+
+  const page = document.getElementById('page');
+  let html = `<div class="search-results"><h3 style="color:var(--muted);margin-bottom:16px">${results.length} matches for "${query}"</h3>`;
+
+  if (!top.length) {
+    html += `<div class="empty"><p>No YOUSPEAK word matches "${query}". Try a different word, or explore:</p><div class="examples">`;
+    for (const ex of ['doxomme', 'britqing', 'kimance', 'theobasis', 'algia', 'paqduqing']) {
+      html += `<div class="example" data-q="${ex}">${ex}</div>`;
+    }
+    html += `</div></div>`;
+  } else {
+    for (const { slug, entry } of top) {
+      const renderable = DATA.canon_words[slug];
+      const glyph = renderable && renderable.glyph_text ? `<span class="word">${renderable.glyph_text}</span>` : '';
+      html += `<div class="search-result" data-word="${slug}">${glyph}<span class="latin">${entry.word}</span><div class="def">${(entry.definition || entry.gap || '').slice(0, 120)}…</div></div>`;
+    }
+  }
+
+  html += '</div>';
+  page.innerHTML = html;
+  attachWordLinks();
+}
+
+function attachWordLinks() {
+  document.querySelectorAll('[data-word]').forEach(el => {
+    el.addEventListener('click', () => {
+      const word = el.dataset.word;
+      document.getElementById('query').value = word;
+      renderWord(word);
+      window.scrollTo(0, 0);
+    });
+  });
+  document.querySelectorAll('[data-q]').forEach(el => {
+    el.addEventListener('click', () => {
+      const q = el.dataset.q;
+      document.getElementById('query').value = q;
+      handleQuery(q);
+    });
+  });
+}
+
+let searchTimer = null;
+function handleQuery(q) {
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(() => {
+    if (!q || !q.trim()) {
+      document.getElementById('page').innerHTML = document.getElementById('empty-state').outerHTML;
+      attachWordLinks();
+      return;
+    }
+    const trimmed = q.trim();
+    // Direct word match
+    if (DATA.canon[trimmed]) {
+      renderWord(trimmed);
+      return;
+    }
+    // Search
+    renderSearch(trimmed);
+  }, 200);
+}
+
+// Init
+loadData().then(() => {
+  const input = document.getElementById('query');
+  input.addEventListener('input', (e) => handleQuery(e.target.value));
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      const q = e.target.value.trim();
+      if (DATA.canon[q]) {
+        renderWord(q);
+      } else {
+        renderSearch(q);
+      }
+    }
+  });
+});
+</script>
+
+</body>
+</html>
